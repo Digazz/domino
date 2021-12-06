@@ -1,0 +1,17 @@
+------ JOGO DE DOMINO AED 1 ------
+             ___________
+            |    .|.   .|
+            |  .  |  .  |
+            |.    |.   .|
+            |_____|_____|              
+
+SEJA BEM VINDO (A) E DIVIRTA-SE
+
+REGRAS DO JOGO:
+
+Numero de jogadores: 4.
+Total de Pedras: 28, as quais possuem em cada uma de suas faces pontos que indicam valores numericos que vao de 0 a 6.
+Inicio da partida: Sao compradas 7 pedras por cada jogador.
+O jogador com bucha de as, ira comecar o jogo.
+Desenvolvimento: Cada jogador, em sua vez, caso tenha pedra, devera posiciona-la nas extremidades da fila da mesa, sendo coerente com as ja existentes
+Fim de Jogo: Ganha o jogador que zera a quantidade de pedras na sua mao.
