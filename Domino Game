@@ -1,0 +1,913 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <ctype.h>
+#include <string.h>
+#include <locale.h>
+#include "pilhadomino.h"
+#include "listadeDomino.h"
+#include "listaseDomino.h"
+
+void boasVindas(){
+	FILE *inicioArq; 
+    char texto[900];
+
+    inicioArq = fopen("bemvindo.txt", "r");  
+
+    if(inicioArq==NULL){ //caso nÃ£o consiga criar 
+        printf("Arquivo nao valido!!\n");
+        exit(1);
+    }
+
+    while(!feof(inicioArq)){
+        fgets(texto,199,inicioArq);
+        printf("%s", texto);
+    }
+
+    fclose(inicioArq);
+}
+
+
+void embaralhaPedras(tp_pilha *pedras){
+	int i,j,k,cont,sort;
+	k = 0;
+	cont = 0;
+	srand ( time(NULL) );
+	tp_pedra pedra;
+	tp_pedra vetor[27];
+	for(i = 0; i < 7;i++){
+		for(j = 0; j <= i; j++){
+				pedra.esquerda = j;
+				pedra.direita = i;
+				push(pedras,pedra);	
+		}
+	}
+	while(!pilha_vazia(pedras)){
+		pop(pedras,&pedra);
+		vetor[k] = pedra;
+		k++;
+	}
+	while(altura_pilha(pedras) != 28){
+		sort = rand() % 28;
+		if(vetor[sort].direita != 99){
+			push(pedras,vetor[sort]);
+			vetor[sort].direita = 99;
+			cont++;
+		}
+	}
+}
+
+void distribuiPedras(tp_pilha *pedras, tp_pedra mJ1[], tp_pedra mJ2[], tp_pedra mJ3[], tp_pedra mJ4[]){
+	tp_pedra pedra;
+	int i = 0;
+	while(!pilha_vazia(pedras)){
+		pop(pedras,&pedra);
+		mJ1[i] = pedra;
+		pop(pedras,&pedra);
+		mJ2[i] = pedra;
+		pop(pedras,&pedra);
+		mJ3[i] = pedra;
+		pop(pedras,&pedra);
+		mJ4[i] = pedra;
+		i++;
+	}
+}
+
+void ordenarPecas(tp_listad *maoJogador1,tp_listad *maoJogador2, tp_listad *maoJogador3, tp_listad *maoJogador4,tp_pedra mJ1[], tp_pedra mJ2[], tp_pedra mJ3[], tp_pedra mJ4[], int *comecar){
+	int i,j,min,marcador;
+	tp_pilha mj1,mj2,mj3,mj4;
+	tp_pedra pedra;
+	
+	inicializa_pilha(&mj1);
+	inicializa_pilha(&mj2);
+	inicializa_pilha(&mj3);
+	inicializa_pilha(&mj4);
+	
+	for(i = 0; i < 7;i++){
+		min = 0;
+		for(j = 0; j < 7; j++){
+			if((mJ1[j].esquerda == 1) && (mJ1[j].direita == 1)){
+				*comecar = 1;
+			}
+			if((mJ1[j].esquerda + mJ1[j].direita) > min){
+				min = mJ1[j].esquerda + mJ1[j].direita;
+				marcador = j;
+			}
+		}
+		push(&mj1,mJ1[marcador]);
+		mJ1[marcador].esquerda = 0;
+		mJ1[marcador].direita = 0;
+	}
+	while(!pilha_vazia(&mj1)){
+		pop(&mj1,&pedra);
+		insere_listad_no_fim(maoJogador1,pedra);
+	}
+	
+		for(i = 0; i < 7;i++){
+		min = 0;
+		for(j = 0; j < 7; j++){
+			if((mJ2[j].esquerda == 1) && (mJ2[j].direita == 1)){
+				*comecar = 2;
+			}
+			if((mJ2[j].esquerda + mJ2[j].direita) > min){
+				min = mJ2[j].esquerda + mJ2[j].direita;
+				marcador = j;
+			}
+		}
+		push(&mj2,mJ2[marcador]);
+		mJ2[marcador].esquerda = 0;
+		mJ2[marcador].direita = 0;
+	}
+	while(!pilha_vazia(&mj2)){
+		pop(&mj2,&pedra);
+		insere_listad_no_fim(maoJogador2,pedra);
+	}
+	
+		for(i = 0; i < 7;i++){
+		min = 0;
+		for(j = 0; j < 7; j++){
+			if((mJ3[j].esquerda == 1) && (mJ3[j].direita == 1)){
+				*comecar = 3;
+			}
+			if((mJ3[j].esquerda + mJ3[j].direita) > min){
+				min = mJ3[j].esquerda + mJ3[j].direita;
+				marcador = j;
+			}
+		}
+		push(&mj3,mJ3[marcador]);
+		mJ3[marcador].esquerda = 0;
+		mJ3[marcador].direita = 0;
+	}
+	while(!pilha_vazia(&mj3)){
+		pop(&mj3,&pedra);
+		insere_listad_no_fim(maoJogador3,pedra);
+	}
+	
+	
+		for(i = 0; i < 7;i++){
+		min = 0;
+		for(j = 0; j < 7; j++){
+			if((mJ4[j].esquerda == 1) && (mJ4[j].direita == 1)){
+				*comecar = 4;
+			}
+			if((mJ4[j].esquerda + mJ4[j].direita) > min){
+				min = mJ4[j].esquerda + mJ4[j].direita;
+				marcador = j;
+			}
+		}
+		push(&mj4,mJ4[marcador]);
+		mJ4[marcador].esquerda = 0;
+		mJ4[marcador].direita = 0;
+	}
+	while(!pilha_vazia(&mj4)){
+		pop(&mj4,&pedra);
+		insere_listad_no_fim(maoJogador4,pedra);
+	}
+} 
+
+	void jogar(tp_listad *maoJogador1, tp_listad *maoJogador2, tp_listad *maoJogador3, tp_listad *maoJogador4,char jogador1[],char jogador2[],char jogador3[],char jogador4[], int *comecar, char ganhador[]){
+		int cond = 0,numPeca,i;
+		char ED;
+		int proxJogador = 0;
+		int pontJ1 = 0, pontJ2 = 0, pontJ3 = 0, pontJ4 = 0;
+		int J1 = 0, J2 = 0, J3 = 0, J4 = 0;
+		tp_no *atu,*passa; 
+		tp_listase *jogo,*atuAux;
+		tp_pedra pedraAux,pedraAux2,pedraAux3;
+		
+		jogo = inicializa_listase();
+		while(cond != 1){
+			system("cls");
+			imprime_listase(jogo);
+			if(tamanho_listase(jogo) == 0){
+				switch(*comecar){
+					case 1:
+						atu = maoJogador1->ini;
+						imprime_listad(maoJogador1,1); 
+						printf("Por favor %s digite a posicao da bucha de as (entre 1-7)\n",jogador1);
+						scanf(" %d",&numPeca);
+						if(numPeca > 7 || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    	}
+						for(i = 1; i <= numPeca - 1;i++){
+							atu = atu->prox;
+						}
+						if((atu->pedra.direita == 1) && (atu->pedra.esquerda == 1)){
+							insere_listase_no_fim(&jogo,atu->pedra);
+							pedraAux = atu->pedra;
+							remove_listad(maoJogador1,pedraAux);
+							cond = 1;
+							proxJogador = 2;
+							J1++;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Peca errada\n");
+							break;	
+						}
+					case 2:
+						atu = maoJogador2->ini; 
+						imprime_listad(maoJogador2,1);
+						printf("Por favor %s digite a posicao da bucha de as (entre 1-7)\n",jogador2);
+						scanf(" %d",&numPeca);
+						if(numPeca > 7 || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    	}
+						for(i = 1; i <= numPeca - 1;i++){
+							atu = atu->prox;
+						}
+						if((atu->pedra.direita == 1) && (atu->pedra.esquerda == 1)){
+							insere_listase_no_fim(&jogo,atu->pedra);
+							pedraAux = atu->pedra;
+							remove_listad(maoJogador2,pedraAux);
+							cond = 1;
+							proxJogador = 3;
+							J2++;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Peca errada\n");
+							break;	
+						}
+					case 3:
+						atu = maoJogador3->ini;
+						imprime_listad(maoJogador3,1); 
+						printf("Por favor %s digite a posicao da bucha de as (entre 1-7)\n",jogador3);
+						scanf(" %d",&numPeca);
+						if(numPeca > 7 || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                		}
+						for(i = 1; i <= numPeca - 1;i++){
+							atu = atu->prox;
+						}
+						if((atu->pedra.direita == 1) && (atu->pedra.esquerda == 1)){
+							insere_listase_no_fim(&jogo,atu->pedra);
+							pedraAux = atu->pedra;
+							remove_listad(maoJogador3,pedraAux);
+							cond = 1;
+							proxJogador = 4;
+							J3++;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Peca errada\n");
+							break;	
+						}
+					case 4:
+						atu = maoJogador4->ini; 
+						imprime_listad(maoJogador4,1);
+						printf("Por favor %s digite a posicao da bucha de as (entre 1-7)\n",jogador4);
+						scanf(" %d",&numPeca);
+						if(numPeca > 7 || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    	}
+						for(i = 1; i <= numPeca - 1;i++){
+							atu = atu->prox;
+						}
+						if((atu->pedra.direita == 1) && (atu->pedra.esquerda == 1)){
+							insere_listase_no_fim(&jogo,atu->pedra);
+							pedraAux = atu->pedra;
+							remove_listad(maoJogador4,pedraAux);
+							cond = 1;
+							proxJogador = 1;
+							J4++;
+							system("cls");
+							break;
+						}else{
+							printf("Peca errada\n");
+							system("cls");
+							break;	
+						}
+				}
+			}
+		}
+		while(cond != 4 && J1 != 7 && J2 != 7 && J3 != 7 && J4 != 7){
+			printf("Pedras jogadas por %s :%d\n",jogador1,J1);
+			printf("Pedras jogadas por %s :%d\n",jogador2,J2);
+			printf("Pedras jogadas por %s :%d\n",jogador3,J3);
+			printf("Pedras jogadas por %s :%d\n",jogador4,J4);
+			atuAux = jogo;
+			while(atuAux->prox !=NULL){
+				atuAux = atuAux->prox;
+			}
+			pedraAux3 = atuAux->pedra;
+			switch(proxJogador){
+				case 1:
+					atu = maoJogador1->ini;
+					passa = maoJogador1->ini;
+					while((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox != NULL)){
+						passa = passa->prox;
+					}
+					if((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox == NULL)){
+						system("cls");
+						printf("-----------------------------\n");
+						printf("%s, passou\n",jogador1);
+						printf("-----------------------------\n");
+						cond++;
+						proxJogador = 2;
+						break;
+					}
+					printf("MESA\n");
+					imprime_listase(jogo);
+					printf("\n-----------------------------------\n");
+					printf("%s sua vez, escolha a pedra (a primeira pedra equivale ao numero 1)\n",jogador1);
+					imprime_listad(maoJogador1,1);
+					scanf("%d",&numPeca);
+					if(numPeca > maoJogador1->tamanho || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    }
+					for(i = 0; i < numPeca - 1; i++){
+						atu = atu->prox;
+					}
+					printf("Qual lado voce quer colocar ? (E/D)");
+					scanf(" %c",&ED);
+					ED = toupper(ED);
+					switch(ED){
+						case 'E':
+							if(atu->pedra.esquerda == jogo->pedra.esquerda){
+								pedraAux2 = atu->pedra;
+								atu->pedra.esquerda = pedraAux2.direita;
+								atu->pedra.direita = pedraAux2.esquerda;
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador1,atu->pedra);
+								J1++;
+								proxJogador = 2;
+								cond = 0;
+								system("cls");
+								break;
+							}else if(atu->pedra.direita == jogo->pedra.esquerda){
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador1,atu->pedra);
+								proxJogador = 2;
+								J1++;
+								cond = 0;
+								system("cls");
+								break;
+							}else{
+								system("cls");
+								printf("Nao foi possivel\n");
+								break;
+							}
+						case 'D':
+						if(atu->pedra.esquerda == pedraAux3.direita){
+							insere_listase_no_fim(&jogo,atu->pedra);
+								remove_listad(maoJogador1,atu->pedra);
+								proxJogador = 2;
+								J1++;
+								cond = 0;
+								system("cls");
+								break;
+						}else if(atu->pedra.direita == pedraAux3.direita){
+							pedraAux2 = atu->pedra;
+							atu->pedra.direita = pedraAux2.esquerda;
+							atu->pedra.esquerda = pedraAux2.direita;
+							insere_listase_no_fim(&jogo,atu->pedra);
+							remove_listad(maoJogador1,atu->pedra);
+							J1++;
+							proxJogador = 2;
+							cond = 0;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Nao foi possivel\n");
+							break;
+						}
+						default:
+							system("cls");
+							printf("Entrada Invalida.\n");
+							break;
+					}
+					break;
+				case 2:
+					atu = maoJogador2->ini;
+					passa = maoJogador2->ini;
+					while((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox != NULL)){
+						passa = passa->prox;
+					}
+					if((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox == NULL)){
+						system("cls");
+						printf("-----------------------------\n");
+						printf("%s, passou\n",jogador2);
+						printf("-----------------------------\n");
+						cond++;
+						proxJogador = 3;
+						break;
+					}
+					printf("MESA\n");
+					imprime_listase(jogo);
+					printf("\n-----------------------------------\n");
+					printf("%s sua vez, escolha a pedra (a primeira pedra equivale ao numero 1)\n",jogador2);
+					imprime_listad(maoJogador2,1);
+					scanf("%d",&numPeca);
+					if(numPeca > maoJogador2->tamanho || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    }
+					for(i = 0; i < numPeca - 1; i++){
+						atu = atu->prox;
+					}
+					printf("Qual lado voce quer colocar ? (E/D)");
+					scanf(" %c",&ED);
+					ED = toupper(ED);
+					switch(ED){
+						case 'E':
+							if(atu->pedra.esquerda == jogo->pedra.esquerda){
+								pedraAux2 = atu->pedra;
+								atu->pedra.esquerda = pedraAux2.direita;
+								atu->pedra.direita = pedraAux2.esquerda;
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador2,atu->pedra);
+								proxJogador = 3;
+								J2++;
+								cond = 0;
+								system("cls");
+								break;
+							}else if(atu->pedra.direita == jogo->pedra.esquerda){
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador2,atu->pedra);
+								proxJogador = 3;
+								J2++;
+								cond = 0;
+								system("cls");
+								break;
+							}else{
+								system("cls");
+								printf("Nao foi possivel\n");
+								break;
+							}
+						case 'D':
+						if(atu->pedra.esquerda == pedraAux3.direita){
+							insere_listase_no_fim(&jogo,atu->pedra);
+								remove_listad(maoJogador2,atu->pedra);
+								proxJogador = 3;
+								J2++;
+								cond = 0;
+								system("cls");
+								break;
+						}else if(atu->pedra.direita == pedraAux3.direita){
+							pedraAux2 = atu->pedra;
+							atu->pedra.direita = pedraAux2.esquerda;
+							atu->pedra.esquerda = pedraAux2.direita;
+							insere_listase_no_fim(&jogo,atu->pedra);
+							remove_listad(maoJogador2,atu->pedra);
+							J2++;
+							cond = 0;
+							proxJogador = 3;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Nao foi possivel\n");
+							break;
+						}
+						default:
+							system("cls");
+							printf("Entrada Invalida.\n");
+							break;
+					}
+					break;
+				case 3:
+					atu = maoJogador3->ini;
+					passa = maoJogador3->ini;
+					while((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox != NULL)){
+						passa = passa->prox;
+					}
+					if((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox == NULL)){
+						system("cls");
+						printf("-----------------------------\n");
+						printf("%s, passou\n",jogador3);
+						printf("-----------------------------\n");
+						cond++;
+						proxJogador = 4;
+						break;
+					}
+					printf("MESA\n");
+					imprime_listase(jogo);
+					printf("\n-----------------------------------\n");
+					printf("%s sua vez, escolha a pedra (a primeira pedra equivale ao numero 1)\n",jogador3);
+					imprime_listad(maoJogador3,1);
+					scanf("%d",&numPeca);
+					if(numPeca > maoJogador3->tamanho || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    }
+					for(i = 0; i < numPeca - 1; i++){
+						atu = atu->prox;
+					}
+					printf("Qual lado voce quer colocar ? (E/D)");
+					scanf(" %c",&ED);
+					ED = toupper(ED);
+					switch(ED){
+						case 'E':
+							if(atu->pedra.esquerda == jogo->pedra.esquerda){
+								pedraAux2 = atu->pedra;
+								atu->pedra.esquerda = pedraAux2.direita;
+								atu->pedra.direita = pedraAux2.esquerda;
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador3,atu->pedra);
+								proxJogador = 4;
+								J3++;
+								cond = 0;
+								system("cls");
+								break;
+							}else if(atu->pedra.direita == jogo->pedra.esquerda){
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador3,atu->pedra);
+								J3++;
+								proxJogador = 4;
+								cond = 0;
+								system("cls");
+								break;
+							}else{
+								system("cls");
+								printf("Nao foi possivel\n");
+								break;
+							}
+						case 'D':
+						if(atu->pedra.esquerda == pedraAux3.direita){
+							insere_listase_no_fim(&jogo,atu->pedra);
+								remove_listad(maoJogador3,atu->pedra);
+								proxJogador = 4;
+								J3++;
+								cond = 0;
+								system("cls");
+								break;
+						}else if(atu->pedra.direita == pedraAux3.direita){
+							pedraAux2 = atu->pedra;
+							atu->pedra.direita = pedraAux2.esquerda;
+							atu->pedra.esquerda = pedraAux2.direita;
+							insere_listase_no_fim(&jogo,atu->pedra);
+							remove_listad(maoJogador3,atu->pedra);
+							J3++;
+							proxJogador = 4;
+							cond = 0;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Nao foi possivel\n");
+							break;
+						}
+						default:
+							system("cls");
+							printf("Entrada Invalida.\n");
+							break;
+					}
+					break;
+				case 4:
+					atu = maoJogador4->ini;
+					passa = maoJogador4->ini;
+					while((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox != NULL)){
+						passa = passa->prox;
+					}
+					if((passa->pedra.direita != pedraAux3.direita) && (passa->pedra.esquerda != pedraAux3.direita)  && (passa->pedra.direita != jogo->pedra.esquerda) && (passa->pedra.esquerda != jogo->pedra.esquerda) && (passa->prox == NULL)){
+						system("cls");
+						printf("-----------------------------\n");
+						printf("%s, passou\n",jogador4);
+						printf("-----------------------------\n");
+						cond++;
+						proxJogador = 1;
+						break;
+					}
+					printf("MESA\n");
+					imprime_listase(jogo);
+					printf("\n-----------------------------------\n");
+					printf("%s sua vez, escolha a pedra (a primeira pedra equivale ao numero 1)\n",jogador4);
+					imprime_listad(maoJogador4,1);
+					scanf("%d",&numPeca);
+					if(numPeca > maoJogador4->tamanho || numPeca < 1){
+                        system("cls");
+                        printf("Entrada invalida. \n");
+                        break;
+                    }
+					for(i = 0; i < numPeca - 1; i++){
+						atu = atu->prox;
+					}
+					printf("Qual lado voce quer colocar ? (E/D)");
+					scanf(" %c",&ED);
+					ED = toupper(ED);
+					switch(ED){
+						case 'E':
+							if(atu->pedra.esquerda == jogo->pedra.esquerda){
+								pedraAux2 = atu->pedra;
+								atu->pedra.esquerda = pedraAux2.direita;
+								atu->pedra.direita = pedraAux2.esquerda;
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador4,atu->pedra);
+								J4++;
+								proxJogador = 1;
+								cond = 0;
+								system("cls");
+								break;
+							}else if(atu->pedra.direita == jogo->pedra.esquerda){
+								insere_listase_no_inicio(&jogo,atu->pedra);
+								remove_listad(maoJogador4,atu->pedra);
+								J4++;
+								proxJogador = 1;
+								cond = 0;
+								system("cls");
+								break;
+							}else{
+								system("cls");
+								printf("Nao foi possivel\n");
+								break;
+							}
+							case 'D':
+						if(atu->pedra.esquerda == pedraAux3.direita){
+							insere_listase_no_fim(&jogo,atu->pedra);
+								remove_listad(maoJogador4,atu->pedra);
+								proxJogador = 1;
+								J4++;
+								cond = 0;
+								system("cls");
+								break;
+						}else if(atu->pedra.direita == pedraAux3.direita){
+							pedraAux2 = atu->pedra;
+							atu->pedra.direita = pedraAux2.esquerda;
+							atu->pedra.esquerda = pedraAux2.direita;
+							insere_listase_no_fim(&jogo,atu->pedra);
+							remove_listad(maoJogador4,atu->pedra);
+							J4++;
+							proxJogador = 1;
+							cond = 0;
+							system("cls");
+							break;
+						}else{
+							system("cls");
+							printf("Nao foi possivel\n");
+							break;
+						}
+						default:
+							system("cls");
+							printf("Entrada Invalida.\n");
+							break;
+					}
+					break;
+			}
+	
+		}
+		imprime_listase(jogo);
+		if(J1 == 7){
+			printf("\n%s VENCEU !!!",jogador1);
+			for (i=0; i<21; i++){
+				ganhador[i] = jogador1[i];
+			}
+		}
+		else if(J2 == 7){
+			printf("\n%s VENCEU !!!",jogador2);
+			for (i=0; i<21; i++){
+				ganhador[i] = jogador2[i];
+			}
+		}
+		else if(J3 == 7){
+			printf("\n%s VENCEU !!!",jogador3);
+			for (i=0; i<21; i++){
+				ganhador[i] = jogador3[i];
+			}
+		}
+		else if(J4 == 7){
+			printf("\n%s VENCEU !!!",jogador4);
+			for (i=0; i<21; i++){
+				ganhador[i] = jogador4[i];
+			}
+		}else if(cond == 4){
+			printf("\n\nO JOGO FECHOU!\n\n");
+			atu = maoJogador1->ini;
+			while(atu->prox != NULL){
+				pontJ1 += (atu->pedra.direita + atu->pedra.esquerda);
+				atu = atu->prox;
+			}
+			atu = maoJogador2->ini;
+			while(atu->prox != NULL){
+				pontJ2 += (atu->pedra.direita + atu->pedra.esquerda);
+				atu = atu->prox;
+			}		
+			atu = maoJogador3->ini;
+			while(atu->prox != NULL){
+				pontJ3 += (atu->pedra.direita + atu->pedra.esquerda);
+				atu = atu->prox;
+			}		
+			atu = maoJogador4->ini;
+			while(atu->prox != NULL){
+				pontJ4 += (atu->pedra.direita + atu->pedra.esquerda);
+				atu = atu->prox;
+			}
+			if((pontJ1 > pontJ2) && (pontJ1 > pontJ3) && (pontJ1 > pontJ4) ){
+				printf("%s VENCEU !!!!\n",jogador1);
+				for (i=0; i<21; i++){
+					ganhador[i] = jogador1[i];
+				}
+			}else if((pontJ2 > pontJ1) && (pontJ2 > pontJ3) && (pontJ2 > pontJ4) ){
+				printf("%s VENCEU !!!!\n",jogador2);
+				for (i=0; i<21; i++){
+					ganhador[i] = jogador2[i];
+				}
+			}else if((pontJ3 > pontJ1) && (pontJ3 > pontJ2) && (pontJ3 > pontJ4) ){
+				printf("%s VENCEU !!!!\n",jogador3);
+				for (i=0; i<21; i++){
+					ganhador[i] = jogador3[i];
+				}
+			}else if((pontJ4 > pontJ1) && (pontJ4 > pontJ3) && (pontJ4 > pontJ2) ){
+				printf("%s VENCEU !!!!\n",jogador2);
+				for (i=0; i<21; i++){
+					ganhador[i] = jogador4[i];
+				}
+			}else{
+				printf("JOGO EMPATOU\n");
+			}
+		}
+	}
+
+
+typedef struct{
+	char nome[21];
+	int pontos;
+}Ganhador;
+
+void score(char ganhador[], int contadorPontos){
+	Ganhador g;
+	int i;
+
+	for(i=0; i<21; i++){
+		g.nome[i] = ganhador[i];
+	}
+	contadorPontos++;
+	g.pontos = contadorPontos;
+
+	FILE *scoreArq;
+	scoreArq = fopen("score.dat", "ab");  
+
+    if(scoreArq==NULL){ //caso nÃ£o consiga criar 
+        printf("ERROR 404 - ARQUIVO INVALIDO.\n");
+        exit(1);
+    }
+	
+	fwrite(&g, sizeof(Ganhador), 1, scoreArq);
+
+	fclose(scoreArq);
+}
+
+int attScore(char ganhador[], int contadorPontos){
+	Ganhador g;
+	int id = 0, i;
+	
+	FILE *scoreArq;
+	scoreArq = fopen("score.dat", "r+b");  
+
+    if(scoreArq==NULL){ //caso nÃ£o consiga criar 
+        printf("ERROR 404 - ARQUIVO INVALIDO.\n");
+        exit(1);
+    }
+	while(fread(&g, sizeof(Ganhador), 1, scoreArq) == 1){
+		if(strcmp(ganhador,g.nome) == 0){
+			for(i=0; i<21; i++){
+				g.nome[i] = ganhador[i];
+			}
+			contadorPontos++;
+			g.pontos += contadorPontos;
+			fseek(scoreArq,(id * sizeof(Ganhador)), SEEK_SET);
+			fwrite(&g, sizeof(Ganhador), 1, scoreArq);
+			fclose(scoreArq);
+			return 0;
+		}
+		id++;
+	}
+	fclose(scoreArq);
+	return 1;
+}
+
+void pesquisarScore(){
+	Ganhador g;
+	char nome[21];
+	FILE *scoreArq;
+	scoreArq = fopen("score.dat", "rb");  
+
+    if(scoreArq==NULL){ //caso nÃ£o consiga criar 
+        printf("ERROR 404 - ARQUIVO INVALIDO.\n");
+        exit(1);
+    }
+	system("cls");
+	fflush(stdin);
+	printf("\nDigite o nome a pesquisar: ");
+	gets(nome);
+	while( fread(&g, sizeof(Ganhador), 1, scoreArq) == 1 ){
+		if(strcmp(nome,g.nome) == 0){
+			printf("--- SCORE GAME DOMINO ---");
+			printf("\n   JOGADOR(A) -- VITORIA(S)   ");
+			printf("\n-------------------------------------------\n");
+			printf("Jogador(a): %s -- %d Vitoria(s)", g.nome, g.pontos);
+			printf("\n-------------------------------------------\n");
+			break;
+		}
+	}
+	fclose(scoreArq);
+}
+
+void verScore(){
+	Ganhador g;
+	FILE *scoreArq;
+	char texto[200];
+
+	scoreArq = fopen("score.dat", "rb");
+    if(scoreArq==NULL){ //caso nÃ£o consiga criar 
+        printf("Arquivo nao valido!!\n");
+        exit(1);
+    }
+	system("cls");
+	printf("\n\n");
+	printf("--- SCORE GAME DOMINO ---");
+	printf("\n   JOGADOR(A) -- VITORIA(S)   ");
+	printf("\n-------------------------------------------\n");
+	while( fread(&g, sizeof(Ganhador), 1, scoreArq) == 1 ){
+		printf("Jogador(a): %s -- %d Vitoria(s)", g.nome, g.pontos);
+		printf("\n-------------------------------------------\n");
+	}
+
+	fclose(scoreArq); // fecha o arquivo
+}
+
+int main(){
+	setlocale(LC_ALL, "Portuguese");
+	boasVindas();
+	int comecar, opcao, contadorPontos = 0, retornoAtt = 0;
+	
+	char jogador1[21],jogador2[21],jogador3[21],jogador4[21],ganhador[21];
+	tp_pilha pedras;
+	tp_listad *maoJogador1, *maoJogador2, *maoJogador3, *maoJogador4;
+	tp_pedra maoJogador1V[7],maoJogador2V[7],maoJogador3V[7],maoJogador4V[7];
+	
+	maoJogador1 = inicializa_listad();
+	maoJogador2 = inicializa_listad();
+	maoJogador3 = inicializa_listad();
+	maoJogador4 = inicializa_listad();
+	
+	inicializa_pilha(&pedras);
+	
+	embaralhaPedras(&pedras);
+
+	printf("\n\nDigite o nome do primeiro jogador: \n");
+	scanf(" %s",&jogador1);
+	printf("Digite o nome do segundo jogador: \n");
+	scanf(" %s",&jogador2);
+	printf("Digite o nome do terceiro jogador: \n");
+	scanf(" %s",&jogador3);
+	printf("Digite o nome do quarto jogador: \n");
+	scanf(" %s",&jogador4);
+	
+	distribuiPedras(&pedras,maoJogador1V,maoJogador2V,maoJogador3V,maoJogador4V);
+
+	ordenarPecas(maoJogador1,maoJogador2,maoJogador3,maoJogador4,maoJogador1V,maoJogador2V,maoJogador3V,maoJogador4V,&comecar);
+
+
+	jogar(maoJogador1,maoJogador2,maoJogador3,maoJogador4,jogador1,jogador2,jogador3,jogador4,&comecar,ganhador);
+	
+	// Caso queira pular direto para a parte do score e do vencedor, basta comentar a chamada da func jogar e descomentar esse for abaixo:
+	/*for (int i=0; i<21; i++){
+		ganhador[i] = jogador1[i];
+	}*/
+
+	retornoAtt = attScore(ganhador, contadorPontos);
+	if(retornoAtt != 0){
+		score(ganhador, contadorPontos);
+	}
+
+	do{
+		printf("\nSCORE GAME - DOMINO\n1 - Visualizar Score\n2 - Pesquisar Jogador pelo nome\n3 - Sair\n");
+		printf("\nEscolha uma opcao: ");
+		scanf("%d", &opcao);
+		switch(opcao){
+			case 1:
+				verScore();
+				break;
+			case 2:
+				pesquisarScore();
+				break;
+			case 3:
+				printf("\nSaindo do score...\n");
+				break;
+			default:
+				printf("\nOpcao invalida.\n");
+				system("pause");
+				break;
+		}
+
+	}while(opcao != 3);
+
+	
+	return 0;
+}
